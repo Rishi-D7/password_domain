@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Domain - Choices</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <div class="options-container">
+            <h1 class="title"><i class="fas fa-lock"></i> Password Domain</h1>
+            <p class="subtitle">Select an option to proceed</p>
+            <div class="options-grid">
+                <div class="option-card" onclick="navigateTo('vault.html')">
+                    <i class="fas fa-vault fa-3x"></i>
+                    <h2>Secure Storage</h2>
+                    <p>Safely store your sensitive information</p>
+                </div>
+                <div class="option-card" onclick="navigateTo('generator.html')">
+                    <i class="fas fa-key fa-3x"></i>
+                    <h2>Password Creator</h2>
+                    <p>Generate unique and strong passwords</p>
+                </div>
+            </div>
+            <div class="nav-buttons">
+                <button class="nav-btn" onclick="navigateTo('help.html')">
+                    <i class="fas fa-question-circle"></i> Help
+                </button>
+                <button class="nav-btn" onclick="navigateTo('contact.html')">
+                    <i class="fas fa-envelope"></i> Contact
+                </button>
+                <button class="nav-btn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </div>
+    </div>
+    <script src="onclick.js"></script>
+</body>
+</html>

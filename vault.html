@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Domain - Vault</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
+</head>
+<body>
+    <nav class="nav-header">
+        <div class="nav-logo">
+            <i class="fas fa-shield-alt"></i> Password Domain
+        </div>
+        <div class="nav-links">
+            <a href="#" class="nav-link" onclick="showHelp()">Help</a>
+            <a href="#" class="nav-link" onclick="showContact()">Contact</a>
+            <a href="#" class="nav-link" onclick="logout()">Logout</a>
+        </div>
+    </nav>
+
+    <div class="vault-container">
+        <div class="space-background">
+            <div class="stars"></div>
+            <div class="twinkling"></div>
+            <div class="clouds"></div>
+        </div>
+        
+        <h1 class="vault-title"><i class="fas fa-vault"></i> Your Password Vault</h1>
+        <div class="category-grid">
+            <button class="category-card" data-category="social" onclick="selectCategory('social')">
+                <i class="fas fa-share-alt"></i>
+                <span>Social Media</span>
+            </button>
+            <button class="category-card" data-category="entertainment" onclick="selectCategory('entertainment')">
+                <i class="fas fa-film"></i>
+                <span>Entertainment</span>
+            </button>
+            <button class="category-card" data-category="ott" onclick="selectCategory('ott')">
+                <i class="fas fa-tv"></i>
+                <span>OTT</span>
+            </button>
+            <button class="category-card" data-category="shopping" onclick="selectCategory('shopping')">
+                <i class="fas fa-shopping-cart"></i>
+                <span>Shopping</span>
+            </button>
+            <button class="category-card" data-category="work" onclick="selectCategory('work')">
+                <i class="fas fa-briefcase"></i>
+                <span>Work</span>
+            </button>
+            <button class="category-card" data-category="email" onclick="selectCategory('email')">
+                <i class="fas fa-envelope"></i>
+                <span>Email</span>
+            </button>
+            <button class="category-card" data-category="others" onclick="selectCategory('others')">
+                <i class="fas fa-folder"></i>
+                <span>Others</span>
+            </button>
+        </div>
+
+        <div class="vault-content hidden" id="vaultContent">
+            <button class="back-btn" onclick="hideCategory()"><i class="fas fa-arrow-left"></i> Back to Categories</button>
+            
+            <div class="category-header">
+                <h2 id="categoryTitle"></h2>
+                <div class="category-stats">
+                    <span>Passwords in this category: <span id="categoryPasswords">0</span></span>
+                    <button class="action-btn pulse" onclick="window.location.href='generator.html'">
+                        <i class="fas fa-key"></i> Generate Password
+                    </button>
+                </div>
+            </div>
+
+            <div class="password-form slide-in">
+                <h3>Add New Password</h3>
+                <form id="passwordForm">
+                    <div class="form-group">
+                        <label><i class="fas fa-globe"></i> Website/App Name</label>
+                        <input type="text" id="website" required>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-user"></i> Username/Email</label>
+                        <input type="text" id="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-key"></i> Password</label>
+                        <div class="password-input">
+                            <input type="password" id="password" required>
+                            <button type="button" class="toggle-password" onclick="togglePasswordVisibility('password')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <button type="submit" class="submit-btn glow-effect">
+                        <i class="fas fa-plus-circle"></i> Add Password
+                    </button>
+                </form>
+            </div>
+
+            <div class="password-list fade-in" id="passwordList"></div>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyA1YX4CJFdwoACOwGItX_36stqSdZDa3Bg",
+            authDomain: "pass-b6a48.firebaseapp.com",
+            projectId: "pass-b6a48",
+            storageBucket: "pass-b6a48.appspot.com",
+            messagingSenderId: "68168144257",
+            appId: "1:68168144257:web:fd0bc39cb3330514808480",
+            measurementId: "G-MQ71Z4FGLY",
+            databaseURL: "https://pass-b6a48-default-rtdb.firebaseio.com/"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.database();
+
+        class PasswordManager {
+            constructor() {
+                this.passwords = [];
+                this.currentCategory = null;
+                this.masterKey = null;
+            }
+
+            async setMasterKey(masterPassword) {
+                const encoder = new TextEncoder();
+                const data = encoder.encode(masterPassword);
+                const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+                this.masterKey = await crypto.subtle.importKey(
+                    'raw',
+                    hashBuffer,
+                    { name: 'AES-GCM' },
+                    false,
+                    ['encrypt', 'decrypt']
+                );
+            }
+
+            async encryptPassword(password) {
+                if (!this.masterKey) throw new Error('Master key not set');
+                const iv = crypto.getRandomValues(new Uint8Array(12));
+                const encoder = new TextEncoder();
+                const data = encoder.encode(password);
+                const encryptedData = await crypto.subtle.encrypt(
+                    { name: 'AES-GCM', iv },
+                    this.masterKey,
+                    data
+                );
+                return {
+                    encrypted: Array.from(new Uint8Array(encryptedData)),
+                    iv: Array.from(iv)
+                };
+            }
+
+            async decryptPassword(encryptedObj) {
+                if (!this.masterKey) throw new Error('Master key not set');
+                const encryptedData = new Uint8Array(encryptedObj.encrypted);
+                const iv = new Uint8Array(encryptedObj.iv);
+                const decryptedData = await crypto.subtle.decrypt(
+                    { name: 'AES-GCM', iv },
+                    this.masterKey,
+                    encryptedData
+                );
+                const decoder = new TextDecoder();
+                return decoder.decode(decryptedData);
+            }
+
+            async loadPasswords() {
+                const user = auth.currentUser;
+                if (!user) return;
+
+                db.ref('passwords/' + user.uid).on('value', async (snapshot) => {
+                    const data = snapshot.val();
+                    this.passwords = [];
+                    
+                    if (data) {
+                        this.passwords = await Promise.all(Object.entries(data).map(async ([id, entry]) => {
+                            try {
+                                const decryptedPassword = await this.decryptPassword(entry.password);
+                                return { id, ...entry, password: decryptedPassword };
+                            } catch (error) {
+                                console.error('Error decrypting password:', error);
+                                return { id, ...entry, password: '**Error Decrypting**' };
+                            }
+                        }));
+                    }
+                    if (this.currentCategory) this.renderPasswords();
+                });
+            }
+
+            async addPassword(website, username, password) {
+                const user = auth.currentUser;
+                if (!user || !this.currentCategory) return false;
+
+                try {
+                    const encryptedPassword = await this.encryptPassword(password);
+                    const newPassword = {
+                        userId: user.uid,
+                        website,
+                        username,
+                        password: encryptedPassword,
+                        category: this.currentCategory,
+                        createdAt: firebase.database.ServerValue.TIMESTAMP
+                    };
+
+                    const newRef = db.ref('passwords/' + user.uid).push();
+                    await newRef.set(newPassword);
+                    return true;
+                } catch (error) {
+                    console.error('Error adding password:', error);
+                    return false;
+                }
+            }
+
+            async deletePassword(id) {
+                const user = auth.currentUser;
+                if (!user) return;
+                await db.ref('passwords/' + user.uid + '/' + id).remove();
+            }
+
+            renderPasswords() {
+                if (!this.currentCategory) return;
+
+                const passwordList = document.getElementById('passwordList');
+                const categoryPasswords = document.getElementById('categoryPasswords');
+                const filtered = this.passwords.filter(p => p.category === this.currentCategory);
+
+                categoryPasswords.textContent = filtered.length;
+                passwordList.innerHTML = filtered.map(p => `
+                    <div class="password-entry fade-in">
+                        <div class="entry-header">
+                            <h3><i class="fas fa-globe"></i> ${p.website}</h3>
+                            <button class="delete-btn" onclick="passwordManager.deletePassword('${p.id}')">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                        <div class="entry-details">
+                            <p><i class="fas fa-user"></i> ${p.username}</p>
+                            <div class="password-field">
+                                <i class="fas fa-key"></i>
+                                <span class="password-hidden">••••••••</span>
+                                <button class="show-btn" onclick="toggleEntryPassword(this, '${p.password}')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        const passwordManager = new PasswordManager();
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            auth.onAuthStateChanged(async user => {
+                if (!user) {
+                    window.location.href = 'login.html';
+                } else {
+                    const masterPassword = sessionStorage.getItem('masterPassword');
+                    if (!masterPassword) {
+                        window.location.href = 'login.html';
+                        return;
+                    }
+                    await passwordManager.setMasterKey(masterPassword);
+                    passwordManager.loadPasswords();
+                }
+            });
+
+            document.getElementById('passwordForm').addEventListener('submit', async e => {
+                e.preventDefault();
+                const website = document.getElementById('website').value;
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+
+                if (await passwordManager.addPassword(website, username, password)) {
+                    e.target.reset();
+                }
+            });
+
+            // Check for generated password from generator page
+            const urlParams = new URLSearchParams(window.location.search);
+            const generatedPassword = urlParams.get('generated');
+            if (generatedPassword) {
+                document.getElementById('password').value = decodeURIComponent(generatedPassword);
+            }
+        });
+
+        function selectCategory(category) {
+            passwordManager.currentCategory = category;
+            document.getElementById('vaultContent').classList.remove('hidden');
+            document.querySelector('.category-grid').style.display = 'none';
+            document.getElementById('categoryTitle').textContent = category.charAt(0).toUpperCase() + category.slice(1) + ' Passwords';
+            passwordManager.renderPasswords();
+        }
+
+        function hideCategory() {
+            document.getElementById('vaultContent').classList.add('hidden');
+            document.querySelector('.category-grid').style.display = 'grid';
+            passwordManager.currentCategory = null;
+        }
+
+        function togglePasswordVisibility(inputId) {
+            const input = document.getElementById(inputId);
+            const toggleBtn = input.nextElementSibling.querySelector('i');
+            input.type = input.type === 'password' ? 'text' : 'password';
+            toggleBtn.className = input.type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash';
+        }
+
+        function toggleEntryPassword(button, password) {
+            const passwordSpan = button.parentElement.querySelector('.password-hidden');
+            const isHidden = passwordSpan.textContent === '••••••••';
+            passwordSpan.textContent = isHidden ? password : '••••••••';
+            button.innerHTML = isHidden ? '<i class="fas fa-eye-slash"></i>' : '<i class="fas fa-eye"></i>';
+        }
+
+        function showHelp() {
+            window.location.href = 'help.html';
+        }
+
+        function showContact() {
+            window.location.href = 'contact.html';
+        }
+
+        function logout() {
+            auth.signOut().then(() => {
+                sessionStorage.removeItem('masterPassword');
+                window.location.href = 'login.html';
+            }).catch((error) => {
+                console.error('Logout error:', error);
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Domain - Authentication</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-analytics-compat.js"></script>
+</head>
+<body>
+    <div class="space-background">
+        <div class="stars"></div>
+        <div class="twinkling"></div>
+        <div class="clouds"></div>
+    </div>
+
+    <div class="container login-container">
+        <div class="form-box">
+            <h1 class="title"><i class="fas fa-lock"></i> Password Domain</h1>
+            <div id="authSection" class="form-section active"></div>
+            <div class="notification" id="notification"></div>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyA1YX4CJFdwoACOwGItX_36stqSdZDa3Bg",
+            authDomain: "pass-b6a48.firebaseapp.com",
+            projectId: "pass-b6a48",
+            storageBucket: "pass-b6a48.appspot.com",
+            messagingSenderId: "68168144257",
+            appId: "1:68168144257:web:fd0bc39cb3330514808480",
+            measurementId: "G-MQ71Z4FGLY",
+            databaseURL: "https://pass-b6a48-default-rtdb.firebaseio.com/"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const authSection = document.getElementById('authSection');
+        const notification = document.getElementById('notification');
+
+        const loginHTML = `
+            <h2>Login to Your Domain</h2>
+            <form id="loginForm">
+                <div class="input-group">
+                    <label for="loginEmail"><i class="fas fa-envelope"></i> Email</label>
+                    <input type="email" id="loginEmail" placeholder="Enter your email" required>
+                </div>
+                <div class="input-group">
+                    <label for="loginPassword"><i class="fas fa-key"></i> Master Password</label>
+                    <div class="password-input">
+                        <input type="password" id="loginPassword" placeholder="Enter your master password" required>
+                        <button type="button" class="toggle-password" onclick="togglePasswordVisibility('loginPassword')">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                <button type="submit" class="submit-btn">Login</button>
+            </form>
+            <div class="auth-options">
+                <p><a href="#" onclick="showSignupForm(); return false;">New Shadow Hunter? Sign Up</a></p>
+                <p><a href="#" onclick="showForgotPasswordForm(); return false;">Forgot Password?</a></p>
+            </div>
+        `;
+
+        const signupHTML = `
+            <h2>Claim Your Domain</h2>
+            <form id="signupForm">
+                <div class="input-group">
+                    <label for="signupEmail"><i class="fas fa-envelope"></i> Email</label>
+                    <input type="email" id="signupEmail" placeholder="Enter your email" required>
+                </div>
+                <div class="input-group">
+                    <label for="signupPassword"><i class="fas fa-key"></i> Master Password</label>
+                    <div class="password-input">
+                        <input type="password" id="signupPassword" placeholder="Create a strong master password" required>
+                        <button type="button" class="toggle-password" onclick="togglePasswordVisibility('signupPassword')">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                <button type="submit" class="submit-btn">Sign Up</button>
+            </form>
+            <div class="auth-options">
+                <p><a href="#" onclick="showLoginForm(); return false;">Already a Hunter? Login</a></p>
+            </div>
+        `;
+
+        const forgotPasswordHTML = `
+            <h2>Reset Your Password</h2>
+            <form id="forgotPasswordForm">
+                <div class="input-group">
+                    <label for="resetEmail"><i class="fas fa-envelope"></i> Email</label>
+                    <input type="email" id="resetEmail" placeholder="Enter your email" required>
+                </div>
+                <button type="submit" class="submit-btn">Reset Password</button>
+            </form>
+            <div class="auth-options">
+                <p><a href="#" onclick="showLoginForm(); return false;">Back to Login</a></p>
+            </div>
+        `;
+
+        const verifyHTML = (email) => `
+            <h2>Verify Your Email</h2>
+            <p>We've sent a verification link to <span>${email}</span>. Please check your inbox and click the link to verify your email.</p>
+            <button class="submit-btn" onclick="resendVerificationEmail()">Resend Verification Email</button>
+            <div class="auth-options">
+                <p><a href="#" onclick="showLoginForm(); return false;">Back to Login</a></p>
+            </div>
+        `;
+
+        function showLoginForm() {
+            authSection.innerHTML = loginHTML;
+            attachLoginListener();
+        }
+
+        function showSignupForm() {
+            authSection.innerHTML = signupHTML;
+            attachSignupListener();
+        }
+
+        function showForgotPasswordForm() {
+            authSection.innerHTML = forgotPasswordHTML;
+            attachForgotPasswordListener();
+        }
+
+        function showVerifySection(email) {
+            authSection.innerHTML = verifyHTML(email);
+        }
+
+        window.togglePasswordVisibility = (id) => {
+            const input = document.getElementById(id);
+            const toggleBtn = input.nextElementSibling.querySelector('i');
+            input.type = input.type === 'password' ? 'text' : 'password';
+            toggleBtn.className = input.type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash';
+        };
+
+        window.resendVerificationEmail = () => {
+            const user = auth.currentUser;
+            if (user) {
+                user.sendEmailVerification()
+                    .then(() => showNotification('Verification email resent'))
+                    .catch(err => showNotification('Failed to resend email: ' + err.message, true));
+            }
+        };
+
+        function attachLoginListener() {
+            const loginForm = document.getElementById('loginForm');
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('loginEmail').value;
+                const password = document.getElementById('loginPassword').value;
+
+                try {
+                    const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                    const user = userCredential.user;
+
+                    if (!user.emailVerified) {
+                        showVerifySection(email);
+                        showNotification('Please verify your email first');
+                        return;
+                    }
+
+                    sessionStorage.setItem('masterPassword', password);
+                    window.location.href = 'options.html'; // Changed to redirect to options page
+                    showNotification('Login Success');
+                } catch (error) {
+                    showNotification('Login failed: ' + error.message, true);
+                }
+            });
+        }
+
+        function attachSignupListener() {
+            const signupForm = document.getElementById('signupForm');
+            signupForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const email = document.getElementById('signupEmail').value;
+                const password = document.getElementById('signupPassword').value;
+
+                auth.createUserWithEmailAndPassword(email, password)
+                    .then((userCredential) => {
+                        const user = userCredential.user;
+                        user.sendEmailVerification()
+                            .then(() => {
+                                showVerifySection(email);
+                                showNotification('Verification email sent');
+                            })
+                            .catch(err => showNotification('Failed to send verification: ' + err.message, true));
+                    })
+                    .catch((error) => showNotification('Signup failed: ' + error.message, true));
+            });
+        }
+
+        function attachForgotPasswordListener() {
+            const forgotPasswordForm = document.getElementById('forgotPasswordForm');
+            forgotPasswordForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const email = document.getElementById('resetEmail').value;
+
+                auth.sendPasswordResetEmail(email)
+                    .then(() => {
+                        showNotification('Password reset email sent');
+                        showLoginForm();
+                    })
+                    .catch((error) => showNotification('Reset failed: ' + error.message, true));
+            });
+        }
+
+        function showNotification(message, isError = false) {
+            notification.textContent = message;
+            notification.className = `notification ${isError ? 'error' : 'success'} show`;
+            setTimeout(() => {
+                notification.className = 'notification';
+            }, 3000);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            showLoginForm();
+        });
+    </script>
+</body>
+</html>

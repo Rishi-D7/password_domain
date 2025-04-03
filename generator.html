@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Domain - Generator</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="generator-container">
+        <h1 class="generator-title"><i class="fas fa-key"></i> Password Generator</h1>
+        <div class="generator-grid">
+            <div class="options-panel">
+                <h3>Customize Your Password</h3>
+                <div class="option-group">
+                    <label><input type="checkbox" id="uppercase" checked> Uppercase</label>
+                    <label><input type="checkbox" id="lowercase" checked> Lowercase</label>
+                    <label><input type="checkbox" id="numbers" checked> Numbers</label>
+                    <label><input type="checkbox" id="symbols" checked> Symbols</label>
+                </div>
+                <div class="length-control">
+                    <label>Length: <span id="lengthValue">16</span></label>
+                    <input type="range" id="passwordLength" min="8" max="32" value="16">
+                </div>
+                <button class="generate-btn" onclick="generatePassword()">Generate</button>
+            </div>
+            <div class="result-panel">
+                <input type="text" id="generatedPassword" readonly>
+                <div class="result-actions">
+                    <button class="action-btn" onclick="copyPassword()">Copy</button>
+                    <button class="action-btn" onclick="saveToVault()">Save to Vault</button>
+                </div>
+                <div class="strength-meter">
+                    <div id="strengthFill"></div>
+                </div>
+                <span id="strengthText">Strength</span>
+            </div>
+        </div>
+    </div>
+    <script src="generator.js"></script>
+</body>
+</html>
