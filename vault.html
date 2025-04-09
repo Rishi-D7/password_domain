@@ -17,7 +17,7 @@
         </div>
         <div class="nav-links">
             <a href="#" class="nav-link" onclick="showHelp()">Help</a>
-            <a href="mailto:mrteam1101@gmail.com" class="nav-link">Contact</a>
+            <a href="contact.html" class="nav-link">Contact</a> <!-- Updated to link to contact.html -->
             <a href="#" class="nav-link" onclick="logout()">Logout</a>
         </div>
     </nav>
@@ -184,7 +184,7 @@
                                 return { id, ...entry, password: decryptedPassword };
                             } catch (error) {
                                 console.error('Error decrypting password:', error);
-                                return { id, ...entry, password: '*Error Decrypting*' };
+                                return { id, ...entry, password: '**Error Decrypting**' };
                             }
                         }));
                     }
@@ -281,7 +281,6 @@
                 }
             });
 
-            // Check for generated password from generator page
             const urlParams = new URLSearchParams(window.location.search);
             const generatedPassword = urlParams.get('generated');
             if (generatedPassword) {
@@ -321,15 +320,10 @@
             window.location.href = 'help.html';
         }
 
-        // Removed showContact function since Contact is now an email link
-        // function showContact() {
-        //     window.location.href = 'contact.html';
-        // }
-
         function logout() {
             auth.signOut().then(() => {
                 sessionStorage.removeItem('masterPassword');
-                window.location.href = 'feedback.html'; // Changed to feedback.html
+                window.location.href = 'feedback.html';
             }).catch((error) => {
                 console.error('Logout error:', error);
             });
