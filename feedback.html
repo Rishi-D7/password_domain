@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Domain - Feedback</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6e3bff;
+            --secondary: #1a1a2d;
+            --background: #0a0a1f;
+            --text: #e0e0ff;
+            --accent: #ff61d8;
+            --shadow: 0 4px 20px rgba(110, 59, 255, 0.15);
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 15px rgba(110, 59, 255, 0.3); }
+            50% { box-shadow: 0 0 25px rgba(110, 59, 255, 0.5); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Rajdhani', sans-serif;
+        }
+
+        body {
+            background: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 50%, rgba(110, 59, 255, 0.1), transparent 60%),
+                        radial-gradient(circle at 80% 20%, rgba(255, 97, 216, 0.1), transparent 40%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .space-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .stars {
+            background: #000 url('data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeD0iMHB4IiB5PSIwcHgiIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48Y2lyY2xlIGZpbGw9IiNGRkYiIGN4PSI1MCIgY3k9IjUwIiByPSIxIi8+PC9zdmc+') repeat;
+            animation: space 180s linear infinite;
+            width: 100%;
+            height: 100%;
+        }
+
+        .twinkling {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 50%, var(--primary) 0%, transparent 50%);
+            opacity: 0.3;
+            animation: twinkle 8s ease-in-out infinite;
+        }
+
+        .clouds {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 80%, var(--accent) 0%, transparent 40%);
+            opacity: 0.1;
+            animation: clouds 15s ease-in-out infinite;
+        }
+
+        @keyframes space {
+            from { background-position: 0 0; }
+            to { background-position: 1000px 1000px; }
+        }
+
+        @keyframes clouds {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(20px); }
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .feedback-container {
+            max-width: 1000px;
+            width: 100%;
+            margin: 40px auto;
+            padding: 30px;
+            background: rgba(26, 26, 45, 0.8);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(110, 59, 255, 0.2);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .title {
+            color: var(--accent);
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: rgba(224, 224, 255, 0.8);
+            margin-bottom: 30px;
+            font-size: 1.2rem;
+        }
+
+        .feedback-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin: 30px 0;
+        }
+
+        @media (max-width: 768px) {
+            .feedback-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .feedback-info {
+                order: -1;
+            }
+        }
+
+        .feedback-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--accent);
+            font-size: 1.1rem;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            background: rgba(10, 10, 31, 0.6);
+            border: 1px solid var(--primary);
+            border-radius: 8px;
+            color: var(--text);
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 15px rgba(255, 97, 216, 0.2);
+            outline: none;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .rating-stars {
+            display: flex;
+            gap: 10px;
+            font-size: 1.8em;
+            color: var(--text);
+            margin: 10px 0;
+            cursor: pointer;
+        }
+
+        .rating-stars i {
+            transition: all 0.2s ease;
+        }
+
+        .rating-stars i:hover {
+            transform: scale(1.2);
+        }
+
+        .feedback-info {
+            background: rgba(10, 10, 31, 0.4);
+            padding: 25px;
+            border-radius: 15px;
+            border: 1px solid rgba(110, 59, 255, 0.1);
+        }
+
+        .feedback-info h2 {
+            color: var(--accent);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .feedback-info h2 i {
+            animation: glow 3s infinite;
+        }
+
+        .feedback-info p {
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .feature-highlight {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .feature-highlight i {
+            color: var(--accent);
+            font-size: 1.3em;
+            min-width: 30px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary);
+            color: var(--text);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.1rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .submit-btn:hover {
+            background: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(110, 59, 255, 0.4);
+        }
+
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: rgba(255, 255, 255, 0.1);
+            transform: rotate(45deg);
+            transition: all 0.6s ease;
+            z-index: -1;
+        }
+
+        .submit-btn:hover::before {
+            transform: rotate(45deg) НикtranslateY(100%);
+        }
+
+        .nav-buttons {
+            margin-top: 40px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .nav-btn {
+            background: rgba(110, 59, 255, 0.2);
+            color: var(--text);
+            padding: 12px 25px;
+            border: 1px solid rgba(110, 59, 255, 0.3);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1rem;
+        }
+
+        .nav-btn:hover {
+            background: rgba(110, 59, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(110, 59, 255, 0.2);
+        }
+
+        .submit-success {
+            animation: pulse 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="space-background">
+        <div class="stars"></div>
+        <div class="twinkling"></div>
+        <div class="clouds"></div>
+    </div>
+    
+    <div class="container">
+        <div class="feedback-container">
+            <h1 class="title"><i class="fas fa-comment-dots"></i> Share Your Feedback</h1>
+            <p class="subtitle">We'd love to hear your thoughts to improve Password Domain</p>
+            
+            <div class="feedback-content">
+                <form id="feedbackForm" class="feedback-form">
+                    <div class="form-group">
+                        <label><i class="fas fa-user-astronaut"></i> Name (Optional)</label>
+                        <input type="text" id="feedbackName" placeholder="Your name">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-envelope"></i> Email (Optional)</label>
+                        <input type="email" id="feedbackEmail" placeholder="Your email">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-star"></i> Rating</label>
+                        <div class="rating-stars">
+                            <i class="far fa-star" data-rating="1"></i>
+                            <i class="far fa-star" data-rating="2"></i>
+                            <i class="far fa-star" data-rating="3"></i>
+                            <i class="far fa-star" data-rating="4"></i>
+                            <i class="far fa-star" data-rating="5"></i>
+                        </div>
+                        <input type="hidden" id="ratingValue" value="0">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-comment-alt"></i> Your Feedback</label>
+                        <textarea id="feedbackMessage" rows="5" required placeholder="What do you like about Password Domain? What can we improve?"></textarea>
+                    </div>
+                    
+                    <button type="submit" class="submit-btn">
+                        <i class="fas fa-paper-plane"></i> Send Feedback
+                    </button>
+                </form>
+                
+                <div class="feedback-info">
+                    <h2><i class="fas fa-heart"></i> We Value Your Input</h2>
+                    <p>Your feedback helps us create a better password management experience for everyone.</p>
+                    
+                    <div class="feature-highlight">
+                        <i class="fas fa-bolt"></i>
+                        <p>Quick responses to all feedback</p>
+                    </div>
+                    
+                    <div class="feature-highlight">
+                        <i class="fas fa-shield-alt"></i>
+                        <p>Your data is always secure</p>
+                    </div>
+                    
+                    <div class="feature-highlight">
+                        <i class="fas fa-lightbulb"></i>
+                        <p>Great ideas get implemented</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="nav-buttons">
+                <button class="nav-btn" onclick="window.location.href='options.html'">
+                    <i class="fas fa-arrow-left"></i> Back to Options
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const stars = document.querySelectorAll('.rating-stars i');
+            const ratingValue = document.getElementById('ratingValue');
+            
+            stars.forEach(star => {
+                star.addEventListener('mouseover', function() {
+                    const rating = parseInt(star.getAttribute('data-rating'));
+                    highlightStars(rating);
+                });
+                
+                star.addEventListener('click', function() {
+                    const rating = parseInt(star.getAttribute('data-rating'));
+                    ratingValue.value = rating;
+                });
+            });
+            
+            document.querySelector('.rating-stars').addEventListener('mouseleave', function() {
+                const currentRating = parseInt(ratingValue.value);
+                highlightStars(currentRating);
+            });
+            
+            function highlightStars(count) {
+                stars.forEach((star, index) => {
+                    if (index < count) {
+                        star.classList.replace('far', 'fas');
+                        star.style.color = '#ff61d8';
+                    } else {
+                        star.classList.replace('fas', 'far');
+                        star.style.color = '#e0e0ff';
+                    }
+                });
+            }
+            
+            document.getElementById('feedbackForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const name = document.getElementById('feedbackName').value;
+                const email = document.getElementById('feedbackEmail').value;
+                const rating = document.getElementById('ratingValue').value;
+                const message = document.getElementById('feedbackMessage').value;
+                
+                if (!message) {
+                    alert('Please enter your feedback before submitting.');
+                    return;
+                }
+                const form = e.target;
+                form.classList.add('submit-success');
+                setTimeout(function() {
+                    form.reset();
+                    ratingValue.value = 0;
+                    highlightStars(0);
+                    form.classList.remove('submit-success');                    
+                    alert('Thank you for your feedback! We appreciate your time.');
+                    window.location.href = 'login.html'; 
+                }, 1500);
+            });
+        });
+    </script>
+</body>
+</html>
